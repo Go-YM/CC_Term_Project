@@ -117,10 +117,9 @@ def list_security_group():
             print("[GroupID] %s, [GroupName] %s, [Owner] 767828727609" % (sg['GroupId'], sg['GroupName']))
         done = True
         
-def condor_status():
-    print("Listing status ...")
-    instance_id = input("Enter instance ID : ")
-    res = ssm.send_command(InstanceIds = [instance_id], DocumentName = 'AWS-RunShellScript', Parameters = {'commands': ['condor_status']})
+def condor_status(id):
+    print("Listing condor status ...")
+    res = ssm.send_command(InstanceIds = [id], DocumentName = 'AWS-RunShellScript', Parameters = {'commands': ['condor_status']})
     command_id = res['Command']['CommandId']
 
     waiter = ssm.get_waiter("command_executed")
@@ -133,7 +132,7 @@ def condor_status():
         logging.error(ex)
         return
 
-    print(ssm.get_command_invocation(CommandId = command_id, InstanceId = instance_id)['StandardOutputContent']) 
+    print(ssm.get_command_invocation(CommandId = command_id, InstanceId = id)['StandardOutputContent']) 
 
 if __name__ == "__main__":
     init_aws()
@@ -193,7 +192,9 @@ if __name__ == "__main__":
             list_security_group()
         
         elif num == 11:
-            condor_status()
+            print("Enter instance id: ",end="")
+            id = input()
+            condor_status(id)
 
         elif num == 99:
             exit(0)
