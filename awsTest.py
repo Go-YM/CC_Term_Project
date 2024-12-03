@@ -116,6 +116,40 @@ def list_security_group():
         for sg in security_groups:
             print("[GroupID] %s, [GroupName] %s, [Owner] 767828727609" % (sg['GroupId'], sg['GroupName']))
         done = True
+
+def create_security_group():
+    print("Creating security group ...")
+    res = ec2.describe_vpcs()
+    vpc_id = res.get('Vpcs', [{}])[0].get('VpcId', '')
+    done = False
+    while done == False:
+        print("Enter Security Group Name: ",end="")
+        Gname = input()
+        print("Enter Security Group Description: ",end="")
+        Gdes = input()
+        print("Enter Type of IpProtocol (Default is tcp)",end="")
+        Iptype = input()
+        if Iptype == '':
+            Iptype = 'tcp'
+        print("Enter Pronunciation of Port: ",end="")
+        fromport = int(input())
+        print("Enter Destination of Port: ",end="")
+        toport = int(input())
+        
+        res = ec2.create_security_group(GroupName = Gname, Description = Gdes, VpcId = vpc_id)
+        security_group_id = res['GroupId']
+        data = ec2.authorize_security_group_ingress(
+        GroupId=security_group_id,
+        IpPermissions=[{'IpProtocol': Iptype,'FromPort': fromport,'ToPort': toport,'IpRanges': [{'CidrIp': '0.0.0.0/0'}]}])
+        print("Successfully created Security Group %s in vpc %s" % (security_group_id, vpc_id))
+        done = True
+        
+def delete_security_group():
+    print("Deleting security group ...")
+    done = False
+    while done == False:
+        
+        done = True
         
 def condor_status(id):
     print("Listing condor status ...")
@@ -145,7 +179,8 @@ if __name__ == "__main__":
         print("  5. stop instance                6. create instance        ")
         print("  7. reboot instance              8. terminate instance     ")
         print("  9. list images                  10. list security group   ")
-        print("  11. condor_status               99. exit                  ")
+        print("  11. create security group       12. delete security group ")
+        print("  13. condor_status               99. exit                  ")
         print("------------------------------------------------------------")
 
         print("Enter an integer: ",end="")
@@ -190,8 +225,14 @@ if __name__ == "__main__":
             
         elif num == 10:
             list_security_group()
-        
+            
         elif num == 11:
+            create_security_group()
+        
+        elif num == 12:
+            delete_security_group()
+        
+        elif num == 13:
             print("Enter instance id: ",end="")
             id = input()
             condor_status(id)
