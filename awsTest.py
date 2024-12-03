@@ -97,6 +97,15 @@ def terminate_instance(id):
         print("Successfully terminated instance %s" % id)
         done = True
 
+def monitor_instance(id):
+    print("Monitoring ... %s" % id)
+    done = False
+    while done == False:
+        res = ec2.monitor_instances(InstanceIds=[id])
+        instance_monitoring = res['InstanceMonitorings'][0]
+        print("Successfully monitoring for instance %s. Current state : %s" % (instance_monitoring['InstanceId'], instance_monitoring['Monitoring']['State']))
+        done = True
+
 def list_images():
     print("Listing images ...")
     done = False
@@ -184,9 +193,10 @@ if __name__ == "__main__":
         print("  3. start instance               4. available regions      ")
         print("  5. stop instance                6. create instance        ")
         print("  7. reboot instance              8. terminate instance     ")
-        print("  9. list images                  10. list security group   ")
-        print("  11. create security group       12. delete security group ")
-        print("  13. condor_status               99. exit                  ")
+        print("  9. monitor instance             10. list images           ")
+        print("  11. list security group         12. create security group ")
+        print("  13. delete security group       14. condor_status         ")
+        print("                                  99. exit                  ")
         print("------------------------------------------------------------")
 
         print("Enter an integer: ",end="")
@@ -225,20 +235,25 @@ if __name__ == "__main__":
             print("Enter instance id: ",end="")
             id = input()
             terminate_instance(id)
-        
+            
         elif num == 9:
+            print("Enter instance id: ",end="")
+            id = input()
+            monitor_instance(id)
+        
+        elif num == 10:
             list_images()
             
-        elif num == 10:
+        elif num == 11:
             list_security_group()
             
-        elif num == 11:
+        elif num == 12:
             create_security_group()
         
-        elif num == 12:
+        elif num == 13:
             delete_security_group()
         
-        elif num == 13:
+        elif num == 14:
             print("Enter instance id: ",end="")
             id = input()
             condor_status(id)
