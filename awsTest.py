@@ -101,6 +101,23 @@ def list_images():
 
         done=True
 
+def condor_status():
+    instance_id = input("Enter instance ID : ")
+    res=ssm.send_command(InstanceIds=[instance_id],DocumentName='AWS-RunShellScript',Parameters={'commands': ['condor_status']})
+    command_id = res['Command']['CommandId']
+
+    waiter = ssm.get_waiter("command_executed")
+    try:
+        waiter.wait(
+        CommandId=command_id,
+        InstanceId=instance_id,
+        )
+    except WaiterError as ex:
+        logging.error(ex)
+        return
+
+    print(ssm.get_command_invocation(CommandId=command_id, InstanceId=instance_id)['StandardOutputContent']) 
+
 if __name__ == "__main__":
     init_aws()
     while True:
@@ -111,7 +128,7 @@ if __name__ == "__main__":
         print("  3. start instance               4. available regions      ")
         print("  5. stop instance                6. create instance        ")
         print("  7. reboot instance              8. list images            ")
-        print("                                  99. exit                  ")
+        print("  9. condor status                99. exit                  ")
         print("------------------------------------------------------------")
 
         print("Enter an integer: ",end="")
@@ -148,6 +165,9 @@ if __name__ == "__main__":
         
         elif num == 8:
             list_images()
+        
+        elif num == 9:
+            condor_status()
 
         elif num == 99:
             exit(0)
