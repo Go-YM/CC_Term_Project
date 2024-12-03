@@ -90,6 +90,16 @@ def reboot_instance(id):
         print("Successfully rebooted instance %s" % id)
         done=True
 
+def terminate_instance(id):
+    print("Terminating ... %s" % id)
+    done = False
+    while done==False:
+        res=ec2.terminate_instances(InstanceIds=[id])
+        instance=resource.Instance(id)
+        instance.wait_until_terminated(Filters=[{'Name': 'instance-id','Values':[id]}])
+        print("Successfully terminated instance %s" % id)
+        done=True
+
 def list_images():
     print("Listing images ...")
     done = False
@@ -110,7 +120,7 @@ def condor_status():
     try:
         waiter.wait(
         CommandId=command_id,
-        InstanceId=instance_id,
+        InstanceId='i-00e05eb3d6be3ae71',
         )
     except WaiterError as ex:
         logging.error(ex)
@@ -127,8 +137,9 @@ if __name__ == "__main__":
         print("  1. list instance                2. available zones        ")
         print("  3. start instance               4. available regions      ")
         print("  5. stop instance                6. create instance        ")
-        print("  7. reboot instance              8. list images            ")
-        print("  9. condor status                99. exit                  ")
+        print("  7. reboot instance              8. terminate instance     ")
+        print("  9. list images                  10. condor status         ")
+        print("                                  99. exit                  ")
         print("------------------------------------------------------------")
 
         print("Enter an integer: ",end="")
@@ -149,9 +160,9 @@ if __name__ == "__main__":
             available_regions()
         
         elif num == 5:
-             print("Enter instance id: ",end="")
-             id=input()
-             stop_instance(id)
+            print("Enter instance id: ",end="")
+            id=input()
+            stop_instance(id)
         
         elif num == 6:
             print("Enter ami id: ",end="")
@@ -159,14 +170,19 @@ if __name__ == "__main__":
             create_instance(id)
         
         elif num == 7:
-             print("Enter instance id: ",end="")
-             id=input()
-             reboot_instance(id)
-        
+            print("Enter instance id: ",end="")
+            id=input()
+            reboot_instance(id)
+
         elif num == 8:
-            list_images()
+            print("Enter instance id: ",end="")
+            id=input()
+            terminate_instance(id)
         
         elif num == 9:
+            list_images()
+        
+        elif num == 10:
             condor_status()
 
         elif num == 99:
