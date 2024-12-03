@@ -127,7 +127,7 @@ def create_security_group():
         Gname = input()
         print("Enter Security Group Description: ",end="")
         Gdes = input()
-        print("Enter Type of IpProtocol (Default is tcp)",end="")
+        print("Enter Type of IpProtocol (Default = tcp): ",end="")
         Iptype = input()
         if Iptype == '':
             Iptype = 'tcp'
@@ -148,7 +148,13 @@ def delete_security_group():
     print("Deleting security group ...")
     done = False
     while done == False:
-        
+        print("Enter Security Group Name: ",end="")
+        Gname = input()
+        if Gname == 'default' or Gname == 'HTCondor':
+            print('Don\'t delete this Security Group!!!')
+            break
+        res = ec2.delete_security_group(GroupName=Gname)
+        print('Successfully deleted Security Group %s' % Gname)
         done = True
         
 def condor_status(id):
