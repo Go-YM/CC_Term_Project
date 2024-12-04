@@ -117,6 +117,15 @@ def monitor_instance(id, max, interval = 60):
         else:
             print(f"No CPU utilization data available for instance {id}.")
         done = True
+        
+def unmonitor_instance(id):
+    print("Unmonitoring...%s" % id)
+    done = False
+    while done == False:
+        res = ec2.unmonitor_instances(InstanceIds=[id])
+        print(f"Successfully unmonitoring for instance {id}")
+        done = True
+    
 
 def list_images():
     print("Listing images ...")
@@ -205,13 +214,13 @@ if __name__ == "__main__":
         print("  3. start instance               4. available regions      ")
         print("  5. stop instance                6. create instance        ")
         print("  7. reboot instance              8. terminate instance     ")
-        print("  9. monitor instance             10. list images           ")
-        print("  11. list security group         12. create security group ")
-        print("  13. delete security group       14. condor_status         ")
-        print("                                  99. exit                  ")
+        print("  9. monitor instance             10. unmonitor instance    ")
+        print("  11. list images                 12. list security group   ")
+        print("  13. create security group       14. delete security group ")
+        print("  15. condor_status               99. exit                  ")
         print("------------------------------------------------------------")
 
-        print("Enter an integer: ",end="")
+        print("Enter a number: ",end="")
         num = int(input())
 
         if num == 1:
@@ -254,20 +263,25 @@ if __name__ == "__main__":
             print("Enter threshold of cpu utilization: ",end="")
             max = int(input())
             monitor_instance(id, max)
-        
+            
         elif num == 10:
+            print("Enter instance id: ",end="")
+            id = input()
+            unmonitor_instance(id)
+        
+        elif num == 11:
             list_images()
             
-        elif num == 11:
+        elif num == 12:
             list_security_group()
             
-        elif num == 12:
+        elif num == 13:
             create_security_group()
         
-        elif num == 13:
+        elif num == 14:
             delete_security_group()
         
-        elif num == 14:
+        elif num == 15:
             print("Enter instance id: ",end="")
             id = input()
             condor_status(id)
