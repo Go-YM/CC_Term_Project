@@ -213,17 +213,39 @@ def list_snapshot():
         for ss in snapshots:
             print("[Snapshot ID] %s, [Volume] %s, [State] %s, [Description] %s" % (ss['SnapshotId'], ss['VolumeId'], ss['State'], ss['Description']))
             done = True
-            
-def create_snapshot():
+
+# test 전 함수
+def create_snapshot(id):
     print("Creating snapshot...")
     done = False
     while done == False:
+        instance_details = ec2.describe_instances(InstanceIds=[id])
+        volumes = [
+            block_device['Ebs']['VolumeId']
+            for reservation in instance_details['Reservations']
+            for instance in reservation['Instances']
+            for block_device in instance.get('BlockDeviceMappings', [])
+            if 'Ebs' in block_device
+        ]
+        if not volumes:
+            print(f"No EBS volumes found for instance {id}.")
+            return
+        for volume_id in volumes:
+            print(f"Creating snapshot for volume {volume_id}...")
+            snapshot = ec2.create_snapshot(
+                VolumeId=volume_id,
+                Description=f"Snapshot of volume {volume_id} from instance {instance_id}"
+            )
+            print("Successfully created Snapshot %s", snapshot['SnapshotId']) 
         done = True
-        
-def delete_snapshot():
+
+# test 전 함수
+def delete_snapshot(id):
     print("Deleteing snapshot...")
     done = False
     while done == False:
+        res = ec2.delete_snapshot(ShanpshotId = id, DryTun = False)
+        print("Successfully deleted Snapshot %s, id)
         done = True
 
 if __name__ == "__main__":
