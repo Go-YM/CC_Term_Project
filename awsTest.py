@@ -115,7 +115,7 @@ def monitor_instance(id, max, interval = 60):
                 print(f"Successfully stopped Instance %s" % id)
                 break
         else:
-            print(f"No CPU utilization data available for instance {id}.")
+            print(f"No CPU utilization data available for instance {id}")
         done = True
         
 def unmonitor_instance(id):
@@ -203,6 +203,28 @@ def condor_status(id):
         return
 
     print(ssm.get_command_invocation(CommandId = command_id, InstanceId = id)['StandardOutputContent']) 
+    
+def list_snapshot():
+    print("Listing snapshot...")
+    done = False
+    while done == False:
+        res = ec2.describe_snapshots(Filters = [{'Name':'owner-id','Values':['767828727609']}])
+        snapshots = res['Snapshots']
+        for ss in snapshots:
+            print("[Snapshot ID] %s, [Volume] %s, [State] %s, [Description] %s" % (ss['SnapshotId'], ss['VolumeId'], ss['State'], ss['Description']))
+            done = True
+            
+def create_snapshot():
+    print("Creating snapshot...")
+    done = False
+    while done == False:
+        done = True
+        
+def delete_snapshot():
+    print("Deleteing snapshot...")
+    done = False
+    while done == False:
+        done = True
 
 if __name__ == "__main__":
     init_aws()
@@ -218,6 +240,8 @@ if __name__ == "__main__":
         print("  11. list images                 12. list security group   ")
         print("  13. create security group       14. delete security group ")
         print("  15. condor_status               99. exit                  ")
+        print("  16. list snapshot               17. create snapshot       ")
+        print("  18. delete snapshot                                       ")
         print("------------------------------------------------------------")
 
         print("Enter a number: ",end="")
@@ -285,6 +309,19 @@ if __name__ == "__main__":
             print("Enter instance id: ",end="")
             id = input()
             condor_status(id)
+            
+        elif num == 16:
+            list_snapshot()
+            
+        elif num == 17:
+            print("Enter instance id: ",end="")
+            id = input()
+            create_sanpshot(id)
+
+        elif num == 18:
+            print("Enter snapshot id: ",end="")
+            id = input()
+            delete_sanpshot(id)
 
         elif num == 99:
             exit(0)
