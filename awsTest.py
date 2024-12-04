@@ -1,4 +1,5 @@
 import boto3
+import time
 from botocore.exceptions import WaiterError
 
 access_key = ""
@@ -7,17 +8,19 @@ secret_key = ""
 global ec2
 global resource
 global ssm
+global cw
 
 def init_aws():
     global ec2
     global resource
     global ssm
+    global cw
 
     ec2 = boto3.client('ec2', aws_access_key_id = access_key, aws_secret_access_key = secret_key, region_name = "us-west-1")
     ssm = boto3.client('ssm', aws_access_key_id = access_key, aws_secret_access_key = secret_key, region_name = "us-west-1")
     resource = boto3.resource('ec2', aws_access_key_id = access_key, aws_secret_access_key = secret_key, region_name = "us-west-1")
+    cw = boto3.client('cloudwatch', aws_access_key_id = access_key, aws_secret_access_key = secret_key, region_name = "us-west-1")
     
-
 def list_instances():
     print("Listing instances...")
     done = False
@@ -97,13 +100,22 @@ def terminate_instance(id):
         print("Successfully terminated instance %s" % id)
         done = True
 
-def monitor_instance(id):
+def monitor_instance(id, max, interval = 60):
     print("Monitoring ... %s" % id)
     done = False
     while done == False:
-        res = ec2.monitor_instances(InstanceIds=[id])
-        instance_monitoring = res['InstanceMonitorings'][0]
-        print("Successfully monitoring for instance %s. Current state : %s" % (instance_monitoring['InstanceId'], instance_monitoring['Monitoring']['State']))
+        res = cw.get_metric_statistics(Namespace='AWS/EC2', MetricName='CPUUtilization', Dimensions=[{'Name': 'InstanceId', 'Value': id}], StartTime=time.time() - 300, EndTime=time.time(), Period=60, Statistics=['Average'])
+        datapoints = res.get('Datapoints', [])
+        if datapoints:
+            cpu_utilization = sorted(datapoints, key=lambda x: x['Timestamp'], reverse=True)[0]['Average']
+            print(f"Instance {id} CPU utilization: {cpu_utilization:.2f}%")
+            if cpu_utilization > max:
+                print(f"CPU utilization exceeded {max}%. Stopping instance {id}...")
+                ec2.stop_instances(InstanceIds=[id])
+                print(f"Successfully stopped Instance %s" % id)
+                break
+        else:
+            print(f"No CPU utilization data available for instance {id}.")
         done = True
 
 def list_images():
@@ -239,7 +251,9 @@ if __name__ == "__main__":
         elif num == 9:
             print("Enter instance id: ",end="")
             id = input()
-            monitor_instance(id)
+            print("Enter threshold of cpu utilization: ",end="")
+            max = int(input())
+            monitor_instance(id, max)
         
         elif num == 10:
             list_images()
