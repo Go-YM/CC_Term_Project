@@ -214,7 +214,6 @@ def list_snapshot():
             print("[Snapshot ID] %s, [Volume] %s, [State] %s, [Description] %s" % (ss['SnapshotId'], ss['VolumeId'], ss['State'], ss['Description']))
             done = True
 
-# test 전 함수
 def create_snapshot(id):
     print("Creating snapshot...")
     done = False
@@ -234,19 +233,31 @@ def create_snapshot(id):
             print(f"Creating snapshot for volume {volume_id}...")
             snapshot = ec2.create_snapshot(
                 VolumeId=volume_id,
-                Description=f"Snapshot of volume {volume_id} from instance {instance_id}"
+                Description=f"Snapshot of volume {volume_id} from instance {id}"
             )
             print("Successfully created Snapshot %s", snapshot['SnapshotId']) 
         done = True
 
-# test 전 함수
 def delete_snapshot(id):
-    print("Deleteing snapshot...")
+    print("Deleting snapshot...")
     done = False
-    while done == False:
-        res = ec2.delete_snapshot(ShanpshotId = id, DryTun = False)
-        print("Successfully deleted Snapshot %s, id)
-        done = True
+    while not done:
+        images = ec2.describe_images(Filters=[{"Name": "block-device-mapping.snapshot-id", "Values": [id]}])
+        if images['Images']:
+            print(f"Snapshot {id} is being used by the following AMIs:")
+            for image in images['Images']:
+                print(f"  - AMI ID: {image['ImageId']}, Name: {image['Name']}")
+                print(f"Deregistering AMI {image['ImageId']}...")
+                ec2.deregister_image(ImageId=image['ImageId'])
+            print(f"All AMIs using snapshot {id} have been deregistered.")
+
+        try:
+            ec2.delete_snapshot(SnapshotId=id, DryRun=False)
+            print(f"Successfully deleted snapshot {id}.")
+            done = True
+        except Exception as e:
+            print(f"Failed to delete snapshot {id}: {e}")
+            done = True
 
 if __name__ == "__main__":
     init_aws()
@@ -338,12 +349,12 @@ if __name__ == "__main__":
         elif num == 17:
             print("Enter instance id: ",end="")
             id = input()
-            create_sanpshot(id)
+            create_snapshot(id)
 
         elif num == 18:
             print("Enter snapshot id: ",end="")
             id = input()
-            delete_sanpshot(id)
+            delete_snapshot(id)
 
         elif num == 99:
             exit(0)
