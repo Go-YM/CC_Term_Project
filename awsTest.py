@@ -77,7 +77,7 @@ def create_instance(id):
         res = resource.create_instances(ImageId=id, InstanceType = 't2.micro', MaxCount=1, MinCount=1, SecurityGroupIds = ['sg-0aea1701a877c2c1d'])
         instance = resource.Instance(res[0].instance_id)
         instance.wait_until_running(Filters = [{'Name': 'instance-id','Values':[res[0].instance_id]}])
-        print("Successfully started EC2 instance %s based on AMI %s" % (res[0].instance_id,id))
+        print("Successfully started EC2 instance %s based on AMI %s" % (res[0].instance_id, id))
         done = True
 
 def reboot_instance(id):
@@ -111,14 +111,14 @@ def monitor_instance(id, max, interval = 60):
         datapoints = res.get('Datapoints', [])
         if datapoints:
             cpu_utilization = sorted(datapoints, key=lambda x: x['Timestamp'], reverse=True)[0]['Average']
-            print(f"Instance {id} CPU utilization: {cpu_utilization:.2f}%")
+            print(f"Instance %s CPU utilization: %s.2f %" % (id, cpu_utilization))
             if cpu_utilization > max:
-                print(f"CPU utilization exceeded {max}%. Stopping instance {id}...")
+                print(f"CPU utilization exceeded %s%. Stopping instance %s..." % (max, id))
                 ec2.stop_instances(InstanceIds=[id])
                 print(f"Successfully stopped Instance %s" % id)
                 break
         else:
-            print(f"No CPU utilization data available for instance {id}")
+            print(f"No CPU utilization data available for instance %s" % id)
         done = True
         
 def unmonitor_instance(id):
@@ -126,7 +126,7 @@ def unmonitor_instance(id):
     done = False
     while done == False:
         res = ec2.unmonitor_instances(InstanceIds=[id])
-        print(f"Successfully unmonitoring for instance {id}")
+        print(f"Successfully unmonitoring for instance %s" % id)
         done = True
     
 
@@ -156,24 +156,26 @@ def create_security_group():
     vpc_id = res.get('Vpcs', [{}])[0].get('VpcId', '')
     done = False
     while done == False:
-        print("Enter Security Group Name: ",end="")
+        print("Enter Security Group Name: ", end="")
         Gname = input()
-        print("Enter Security Group Description: ",end="")
+        print("Enter Security Group Description: ", end="")
         Gdes = input()
-        print("Enter Type of IpProtocol (Default = tcp): ",end="")
+        print("Enter Type of IpProtocol (Default = tcp): ", end="")
         Iptype = input()
         if Iptype == '':
             Iptype = 'tcp'
-        print("Enter Pronunciation of Port: ",end="")
+        print("Enter Pronunciation of Port: ", end="")
         fromport = int(input())
-        print("Enter Destination of Port: ",end="")
+        print("Enter Destination of Port: ", end="")
         toport = int(input())
+        print("Enter Address of IP: (Defualt = 0.0.0.0/0): ", end="")
+        cidrip = input()
         
         res = ec2.create_security_group(GroupName = Gname, Description = Gdes, VpcId = vpc_id)
         security_group_id = res['GroupId']
         data = ec2.authorize_security_group_ingress(
         GroupId=security_group_id,
-        IpPermissions=[{'IpProtocol': Iptype,'FromPort': fromport,'ToPort': toport,'IpRanges': [{'CidrIp': '0.0.0.0/0'}]}])
+        IpPermissions=[{'IpProtocol': Iptype,'FromPort': fromport,'ToPort': toport,'IpRanges': [{'CidrIp': cidrip}]}])
         print("Successfully created Security Group %s in vpc %s" % (security_group_id, vpc_id))
         done = True
         
@@ -228,15 +230,15 @@ def create_snapshot(id):
             if 'Ebs' in block_device
         ]
         if not volumes:
-            print(f"No EBS volumes found for instance {id}.")
+            print(f"No EBS volumes found for instance %s" % id)
             return
         for volume_id in volumes:
-            print(f"Creating snapshot for volume {volume_id}...")
+            print(f"Creating snapshot for volume %s..." % volume_id)
             snapshot = ec2.create_snapshot(
                 VolumeId=volume_id,
-                Description=f"Snapshot of volume {volume_id} from instance {id}"
+                Description=f"Snapshot of volume %s from instance %s" % (volume_id, id)
             )
-            print("Successfully created Snapshot %s", snapshot['SnapshotId']) 
+            print("Successfully created Snapshot %s" % snapshot['SnapshotId']) 
         done = True
 
 def delete_snapshot(id):
@@ -245,19 +247,19 @@ def delete_snapshot(id):
     while not done:
         images = ec2.describe_images(Filters=[{"Name": "block-device-mapping.snapshot-id", "Values": [id]}])
         if images['Images']:
-            print(f"Snapshot {id} is being used by the following AMIs:")
+            print(f"Snapshot %s is being used by the following AMIs:" % id)
             for image in images['Images']:
-                print(f"  - AMI ID: {image['ImageId']}, Name: {image['Name']}")
-                print(f"Deregistering AMI {image['ImageId']}...")
+                print(f"  - AMI ID: %s, Name: %s" % (image['ImageId'], image['Name']))
+                print(f"Deregistering AMI %s..." % image['ImageId'])
                 ec2.deregister_image(ImageId=image['ImageId'])
-            print(f"All AMIs using snapshot {id} have been deregistered.")
+            print(f"All AMIs using snapshot %s have been deregistered" % id)
 
         try:
             ec2.delete_snapshot(SnapshotId=id, DryRun=False)
-            print(f"Successfully deleted snapshot {id}.")
+            print(f"Successfully deleted snapshot %s" % id)
             done = True
         except Exception as e:
-            print(f"Failed to delete snapshot {id}: {e}")
+            print(f"Failed to delete snapshot %s: %s" %(id, e))
             done = True
 
 if __name__ == "__main__":
