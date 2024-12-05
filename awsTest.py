@@ -94,6 +94,9 @@ def terminate_instance(id):
     print("Terminating ... %s" % id)
     done = False
     while done == False:
+        if id == 'i-0b11d6ef1f13f1d4a' or id == 'i-02eec58bda8af1423':
+            print('Don\'t delete this Instance!!!')
+            break
         res = ec2.terminate_instances(InstanceIds = [id])
         instance = resource.Instance(id)
         instance.wait_until_terminated(Filters = [{'Name': 'instance-id','Values':[id]}])
@@ -174,12 +177,10 @@ def create_security_group():
         print("Successfully created Security Group %s in vpc %s" % (security_group_id, vpc_id))
         done = True
         
-def delete_security_group():
+def delete_security_group(Gname):
     print("Deleting security group ...")
     done = False
     while done == False:
-        print("Enter Security Group Name: ",end="")
-        Gname = input()
         if Gname == 'default' or Gname == 'HTCondor':
             print('Don\'t delete this Security Group!!!')
             break
@@ -196,7 +197,7 @@ def condor_status(id):
     try:
         waiter.wait(
         CommandId = command_id,
-        InstanceId = 'i-00e05eb3d6be3ae71',
+        InstanceId = 'i-0b11d6ef1f13f1d4a',
         )
     except WaiterError as ex:
         logging.error(ex)
@@ -336,7 +337,9 @@ if __name__ == "__main__":
             create_security_group()
         
         elif num == 14:
-            delete_security_group()
+            print("Enter Security Group Name: ",end="")
+            Gname = input()
+            delete_security_group(Gname)
         
         elif num == 15:
             print("Enter instance id: ",end="")
