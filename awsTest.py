@@ -111,7 +111,7 @@ def monitor_instance(id, max, interval = 60):
         datapoints = res.get('Datapoints', [])
         if datapoints:
             cpu_utilization = sorted(datapoints, key=lambda x: x['Timestamp'], reverse=True)[0]['Average']
-            print(f"Instance %s CPU utilization: %s.2f %" % (id, cpu_utilization))
+            print(f"Instance {id} CPU utilization: {cpu_utilization:.2f} %")
             if cpu_utilization > max:
                 print(f"CPU utilization exceeded %s%. Stopping instance %s..." % (max, id))
                 ec2.stop_instances(InstanceIds=[id])
@@ -266,103 +266,197 @@ if __name__ == "__main__":
     init_aws()
     while True:
         print("------------------------------------------------------------")
-        print("           Amazon AWS Control Panel using SDK               ")
+        print("        Amazon AWS Control Panel using SDK - Main           ")
         print("------------------------------------------------------------")
-        print("  1. list instance                2. available zones        ")
-        print("  3. start instance               4. available regions      ")
-        print("  5. stop instance                6. create instance        ")
-        print("  7. reboot instance              8. terminate instance     ")
-        print("  9. monitor instance             10. unmonitor instance    ")
-        print("  11. list images                 12. list security group   ")
-        print("  13. create security group       14. delete security group ")
-        print("  15. condor_status               99. exit                  ")
-        print("  16. list snapshot               17. create snapshot       ")
-        print("  18. delete snapshot                                       ")
+        print("  1. Instance                     2. Abailiability          ")
+        print("  3. Security Group               4. Snapshot               ")
+        print("                                                            ")
+        print("  00. back                        99. exit                  ")
         print("------------------------------------------------------------")
 
         print("Enter a number: ",end="")
         num = int(input())
 
         if num == 1:
-            list_instances()
+            while True:
+                print("------------------------------------------------------------")
+                print("      Amazon AWS Control Panel using SDK - Instance         ")
+                print("------------------------------------------------------------")
+                print("  1. list instance                2. list images            ")
+                print("  3. start instance               4. stop instance          ")
+                print("  5. reboot instance              6. create instance        ")
+                print("  7. monitor instance             8. unmonitor instance     ")
+                print("  9. terminate instance           10. condor status         ")
+                print("                                                            ")
+                print("  00. back                        99. exit                  ")
+                print("------------------------------------------------------------")
+
+                print("Enter a number: ",end="")
+                num = int(input())
+                
+                if num == 1:
+                    list_instances()
+        
+                elif num == 2:
+                    list_images()
+
+        
+                elif num == 3:
+                    print("Enter instance id: ",end="")
+                    id = input()
+                    start_instance(id)                
+
+                    
+                elif num == 4:
+                    print("Enter instance id: ",end="")
+                    id = input()
+                    stop_instance(id)                
+
+        
+                elif num == 5:
+                    print("Enter instance id: ",end="")
+                    id = input()
+                    reboot_instance(id)                
+        
+                elif num == 6:
+                    print("Enter ami id: ",end="")
+                    id = input()
+                    create_instance(id)
+        
+                elif num == 7:
+                    print("Enter instance id: ",end="")
+                    id = input()
+                    print("Enter threshold of cpu utilization: ",end="")
+                    max = int(input())
+                    monitor_instance(id, max)
+
+                elif num == 8:
+                    print("Enter instance id: ",end="")
+                    id = input()
+                    unmonitor_instance(id)
+
+                elif num == 9:
+                    print("Enter instance id: ",end="")
+                    id = input()
+                    terminate_instance(id)
+                    
+                elif num == 10:
+                    print("Enter instance id: ",end="")
+                    id = input()
+                    condor_status(id)
+                    
+                elif num == 99:
+                    exit(0)
+            
+                elif num == 00:
+                    break
+                    
+                else:
+                    print("concertration!")
         
         elif num == 2:
-            available_zones()
+            while True:
+                print("------------------------------------------------------------")
+                print("     Amazon AWS Control Panel using SDK - Availability      ")
+                print("------------------------------------------------------------")
+                print("  1. available zones              2. available regions      ")
+                print("                                                            ")
+                print("  00. back                        99. exit                  ")
+                print("------------------------------------------------------------")
+
+                print("Enter a number: ",end="")
+                num = int(input())
+                
+                if num == 1:
+                    available_zones()
+        
+                elif num == 2:
+                    available_regions()
+                    
+                elif num == 99:
+                    exit(0)
+            
+                elif num == 00:
+                    break
+                    
+                else:
+                    print("concertration!")
         
         elif num == 3:
-            print("Enter instance id: ",end="")
-            id = input()
-            start_instance(id)
+            while True:
+                print("------------------------------------------------------------")
+                print("   Amazon AWS Control Panel using SDK - Security Group      ")
+                print("------------------------------------------------------------")
+                print("  1. list security group          2. create security group  ")
+                print("  3. delete security group                                  ")
+                print("                                                            ")
+                print("  00. back                        99. exit                  ")
+                print("------------------------------------------------------------")
+
+                print("Enter a number: ",end="")
+                num = int(input())
+                
+                if num == 1:
+                    list_security_group()
+        
+                elif num == 2:
+                    create_security_group()
+                    
+                elif num == 3:
+                    print("Enter Security Group Name: ",end="")
+                    Gname = input()
+                    delete_security_group(Gname)
+                    
+                elif num == 99:
+                    exit(0)
+            
+                elif num == 00:
+                    break
+                    
+                else:
+                    print("concertration!")
         
         elif num == 4:
-            available_regions()
-        
-        elif num == 5:
-            print("Enter instance id: ",end="")
-            id = input()
-            stop_instance(id)
-        
-        elif num == 6:
-            print("Enter ami id: ",end="")
-            id = input()
-            create_instance(id)
-        
-        elif num == 7:
-            print("Enter instance id: ",end="")
-            id = input()
-            reboot_instance(id)
+            while True:
+                print("------------------------------------------------------------")
+                print("      Amazon AWS Control Panel using SDK - Snapshot         ")
+                print("------------------------------------------------------------")
+                print("  1. list snapshot                2. create snapshot        ")
+                print("  3. delete snapshot                                        ")
+                print("                                                            ")
+                print("  00. back                        99. exit                  ")
+                print("------------------------------------------------------------")
 
-        elif num == 8:
-            print("Enter instance id: ",end="")
-            id = input()
-            terminate_instance(id)
-            
-        elif num == 9:
-            print("Enter instance id: ",end="")
-            id = input()
-            print("Enter threshold of cpu utilization: ",end="")
-            max = int(input())
-            monitor_instance(id, max)
-            
-        elif num == 10:
-            print("Enter instance id: ",end="")
-            id = input()
-            unmonitor_instance(id)
+                print("Enter a number: ",end="")
+                num = int(input())
+                
+                if num == 1:
+                    list_snapshot()
         
-        elif num == 11:
-            list_images()
+                elif num == 2:
+                    print("Enter instance id: ",end="")
+                    id = input()
+                    create_snapshot(id)
+                    
+                elif num == 3:
+                    print("Enter snapshot id: ",end="")
+                    id = input()
+                    delete_snapshot(id)
+                    
+                elif num == 99:
+                    exit(0)
             
-        elif num == 12:
-            list_security_group()
+                elif num == 00:
+                    break
+                    
+                else:
+                    print("concertration!")
             
-        elif num == 13:
-            create_security_group()
-        
-        elif num == 14:
-            print("Enter Security Group Name: ",end="")
-            Gname = input()
-            delete_security_group(Gname)
-        
-        elif num == 15:
-            print("Enter instance id: ",end="")
-            id = input()
-            condor_status(id)
-            
-        elif num == 16:
-            list_snapshot()
-            
-        elif num == 17:
-            print("Enter instance id: ",end="")
-            id = input()
-            create_snapshot(id)
-
-        elif num == 18:
-            print("Enter snapshot id: ",end="")
-            id = input()
-            delete_snapshot(id)
-
         elif num == 99:
             exit(0)
+            
+        elif num == 00:
+            print("can\'t back here")
             
         else:
             print("concertration!")
